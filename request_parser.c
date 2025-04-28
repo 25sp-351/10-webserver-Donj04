@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "client_handler.h"
+#include "responder.h"
 
 // Print debug information about client request
 void req_print(const Request req) {
@@ -48,8 +49,7 @@ char* parse_request(Request* req, const char* input_request) {
 
     if (sscanf(input_request, "%s %s %s", req->method, req->path,
                req->version) != 3)
-        create_response(response, BAD_REQUEST, "Bad Request", NULL, NULL,
-                        true);
+        create_response(response, BAD_REQUEST, "Bad Request", NULL, NULL, true);
 
     else if (strncmp(req->version, VERSION, MSG_MAX_SIZE) != 0)
         create_response(response, INVALID_HTTP_VER,
