@@ -75,7 +75,7 @@ int process_calc(const client_data_t* client_data, const Request req) {
     int num2;
     int result;
 
-    if (sscanf(req.path, "/calc/%s/%d/%d", operator, & num1, &num2) != 3)
+    if (sscanf(req.path, "/calc/%s/%d/%d", operator, &num1, &num2) != 3)
         return PATH_INVALID;
 
     if (strncmp(operator, "add", OP_SIZE) == 0)
@@ -84,7 +84,7 @@ int process_calc(const client_data_t* client_data, const Request req) {
     else if (strncmp(operator, "sub", OP_SIZE) == 0)
         result = num1 - num2;
 
-    else if (strncmp(operator, "add", OP_SIZE) == 0)
+    else if (strncmp(operator, "mul", OP_SIZE) == 0)
         result = num1 * num2;
 
     else if (strncmp(operator, "div", OP_SIZE) == 0)
