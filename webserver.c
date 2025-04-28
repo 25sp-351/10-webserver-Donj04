@@ -8,8 +8,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "client_handler.h"
+
 #define DEFAULT_PORT 8080
-#define MAX_MSG_SIZE 1024
 #define MAX_CONNECT_REQUESTS 5
 
 #define P_ARG_STR "-p"
@@ -19,11 +20,6 @@
 
 #define USAGE_ERR 1
 #define PORT_INPUT_ERR 2
-
-typedef struct {
-    int client_fd;
-    bool verbose;
-} client_data_t;
 
 int server_fd = -1;
 
@@ -76,7 +72,7 @@ int handle_args(int argc, char* argv[], int* port_num, bool* verbose) {
     return 0;
 }
 
-// Initialize echo server using TCP, and print an error message if failed
+// Initialize server using TCP, and print an error message if failed
 int setup_server(struct sockaddr_in* servaddr, int port_num) {
     printf("Creating socket...\n");
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -104,47 +100,6 @@ int setup_server(struct sockaddr_in* servaddr, int port_num) {
         return 1;
     }
     return 0;
-}
-
-// Read messages from the client and echo them back
-void* read_client(void* input_ptr) {
-    client_data_t* input = (client_data_t*)input_ptr;
-    pthread_t thread_id  = pthread_self();
-    char buffer[MAX_MSG_SIZE];
-
-    printf("Client connected, handling in thread %lu\n",
-           (unsigned long)thread_id);
-
-    while (true) {
-        memset(buffer, 0, MAX_MSG_SIZE);
-
-        ssize_t bytes_read = read(input->client_fd, buffer, MAX_MSG_SIZE);
-        if (bytes_read == -1) {
-            perror("read() failed");
-            continue;
-        } else if (bytes_read == 0) {
-            printf("Client disconnected\n");
-            break;
-        }
-
-        buffer[bytes_read] = '\0';
-
-        if (input->verbose) {
-            printf("Thread %lu received: %s", (unsigned long)thread_id, buffer);
-            // Print a newline if input did not have one
-            if (buffer[bytes_read - 1] != '\n')
-                printf("\n");
-            printf("===================\n");
-        }
-
-        if (write(input->client_fd, buffer, bytes_read) == -1)
-            perror("write() failed");
-    }
-
-    close(input->client_fd);
-    printf("Client FD closed (thread: %lu)\n", (unsigned long)thread_id);
-    free(input);
-    return NULL;
 }
 
 void close_server() {
@@ -186,7 +141,7 @@ int main(int argc, char* argv[]) {
         data->verbose       = verbose;
 
         pthread_t thread_id;
-        if (pthread_create(&thread_id, NULL, read_client, data) != 0) {
+        if (pthread_create(&thread_id, NULL, handle_client, data) != 0) {
             perror("pthread_create() failed");
             close(client_fd);
             free(data);
