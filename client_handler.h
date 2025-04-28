@@ -3,15 +3,6 @@
 
 #include <stdbool.h>
 
-#define MSG_MAX_SIZE 1024
-#define CLIENT_CLOSED 2
-
-#define VERSION "HTTP/1.1"
-#define GET_METHOD "GET"
-#define DEFAULT_CONTENT_TYPE "text/plain"
-#define KEEP_CONNECTION "keep-alive"
-#define CLOSE_CONNECTION "close"
-
 typedef struct {
     int client_fd;
     bool verbose;

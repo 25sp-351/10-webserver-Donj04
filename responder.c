@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "constants.h"
+
 void create_response(char* final_str, int status_code, const char* status_msg,
                      const char* content_type, const char* body,
                      bool keep_alive) {
@@ -36,4 +38,36 @@ int send_response(const client_data_t* client_data, const char* response) {
         return 1;
     }
     return 0;
+}
+
+int send_ok_response(const client_data_t* client_data, const Request req,
+                     const char* body) {
+    char response[MSG_MAX_SIZE];
+    create_response(response, OK_CODE, OK_MSG, DEFAULT_CONTENT_TYPE, body,
+                    req.keep_alive);
+    return send_response(client_data, response);
+}
+
+int send_bad_req_response(const client_data_t* client_data, const Request req,
+                          const char* body) {
+    char response[MSG_MAX_SIZE];
+    create_response(response, BAD_REQ_CODE, BAD_REQ_MSG, DEFAULT_CONTENT_TYPE,
+                    body, req.keep_alive);
+    return send_response(client_data, response);
+}
+
+int send_bad_ver_response(const client_data_t* client_data, const Request req,
+                          const char* body) {
+    char response[MSG_MAX_SIZE];
+    create_response(response, BAD_VER_CODE, BAD_VER_MSG, DEFAULT_CONTENT_TYPE,
+                    body, req.keep_alive);
+    return send_response(client_data, response);
+}
+
+int send_bad_method_response(const client_data_t* client_data,
+                             const Request req, const char* body) {
+    char response[MSG_MAX_SIZE];
+    create_response(response, METHOD_NOT_ALLOWED, BAD_METHOD_MSG,
+                    DEFAULT_CONTENT_TYPE, body, req.keep_alive);
+    return send_response(client_data, response);
 }

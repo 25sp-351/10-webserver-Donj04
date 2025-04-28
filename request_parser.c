@@ -7,10 +7,12 @@
 
 #include "client_handler.h"
 #include "responder.h"
+#include "constants.h"
 
 // Print debug information about client request
 void req_print(const Request req) {
     printf(
+        "Parsed request data:\n"
         "method: %s\n"
         "path: %s\n"
         "ver: %s\n"
@@ -44,27 +46,24 @@ bool get_connection_header_val(const char* request) {
     return keep_alive;
 }
 
-char* parse_request(Request* req, const char* input_request) {
-    char* response = malloc(MSG_MAX_SIZE);
+int parse_request(const client_data_t* client_data, Request* req,
+                    const char* input_request) {
 
     if (sscanf(input_request, "%s %s %s", req->method, req->path,
                req->version) != 3)
-        create_response(response, BAD_REQUEST, "Bad Request", NULL, NULL, true);
+        send_bad_req_response(client_data, *req, NULL);
 
     else if (strncmp(req->version, VERSION, MSG_MAX_SIZE) != 0)
-        create_response(response, INVALID_HTTP_VER,
-                        "HTTP Version Not Supported", NULL, NULL, true);
+        send_bad_ver_response(client_data, *req, NULL);
 
     else if (strncmp(req->method, GET_METHOD, MSG_MAX_SIZE) != 0)
-        create_response(response, METHOD_NOT_ALLOWED, "Method Not Allowed",
-                        NULL, NULL, true);
+        send_bad_method_response(client_data, *req, NULL);
 
     else {
         req->keep_alive = get_connection_header_val(input_request);
-        // req_print(*req);
-        free(response);
-        return NULL;
+        req_print(*req);
+        return 0;
     }
-    // req_print(*req);
-    return response;
+    req_print(*req);
+    return 1;
 }

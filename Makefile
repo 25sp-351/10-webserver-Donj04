@@ -1,6 +1,6 @@
 MAIN = webserver
 
-OBJS = $(MAIN).o client_handler.o request_parser.o responder.o
+OBJS = $(MAIN).o client_handler.o request_parser.o responder.o process_request.o
 
 CC = gcc
 CFLAGS = -g -Wall -Wextra
@@ -8,11 +8,11 @@ CFLAGS = -g -Wall -Wextra
 
 # compile commands
 
-all: rebuild
+rebuild: clean build
+r: rebuild
 
 build: $(MAIN)
-
-rebuild: clean build
+b: build
 
 
 # dependencies
@@ -28,3 +28,7 @@ $(MAIN): $(OBJS)
 
 clean:
 	rm -f $(MAIN) $(OBJS)
+c: clean
+
+
+.PHONY: rebuild build clean r b c

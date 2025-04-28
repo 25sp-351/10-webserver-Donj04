@@ -1,14 +1,11 @@
 #ifndef REQUEST_PARSER_H
 #define REQUEST_PARSER_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
-#define REQUEST_OK 200
-#define BAD_REQUEST 400
-#define INVALID_HTTP_VER 505
-#define METHOD_NOT_ALLOWED 405
+#include "client_handler.h"
 
 #define METHOD_SIZE 8
 #define PATH_SIZE 256
@@ -23,6 +20,7 @@ typedef struct {
     bool keep_alive;
 } Request;
 
-char* parse_request(Request* req, const char* input_request);
+int parse_request(const client_data_t* client_data, Request* req,
+                    const char* input_request);
 
 #endif
