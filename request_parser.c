@@ -18,7 +18,7 @@ void req_print(const Request req) {
         "ver: %s\n"
         "connection: %s\n",
         req.method, req.path, req.version,
-        (req.keep_alive) ? "keep-alive" : "close");
+        (req.keep_alive) ? KEEP_CONNECTION : CLOSE_CONNECTION);
 }
 
 // Get the value of the "Connection" header in the request.
