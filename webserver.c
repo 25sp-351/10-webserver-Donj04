@@ -31,8 +31,9 @@ void usage_msg(char* argv[]) {
             "to the terminal\n");
 }
 
-// Read command line arguments and print an error if the inputs were invalid
-// Sets values of port_num and verbose based on arguments given
+// Read command line arguments for port number and verbose printing.
+// Prints an error message and returns error code if any inputs were invalid.
+// Sets values of 'port_num' and 'verbose' based on arguments given.
 int handle_args(int argc, char* argv[], int* port_num, bool* verbose) {
     bool p_arg_found = false;
     bool v_arg_found = false;
@@ -64,15 +65,16 @@ int handle_args(int argc, char* argv[], int* port_num, bool* verbose) {
             *verbose    = true;
             v_arg_found = true;
 
-            // If argument is not '-p' or '-v', and is not the port number given
-            // after '-p', the argument must be invalid
+            // Check if the previous argument is '-p', to skip port number in
+            // finding unrecognized arguments
         } else if (strncmp(argv[ix - 1], P_ARG_STR, ARG_LEN) != 0)
             return USAGE_ERR;
     }
     return 0;
 }
 
-// Initialize server using TCP, and print an error message if failed
+// Initialize a server using TCP.
+// If an error occurs, prints an error message and returns nonzero
 int setup_server(struct sockaddr_in* servaddr, int port_num) {
     printf("Creating socket...\n");
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -102,19 +104,23 @@ int setup_server(struct sockaddr_in* servaddr, int port_num) {
     return 0;
 }
 
+// Closes the server file descriptor
 void close_server() {
     close(server_fd);
     printf("\nServer FD closed\n");
     exit(0);
 }
 
+// Initializes a TCP server and endlessly accepts connections until the 'SIGINT'
+// signal is used
 int main(int argc, char* argv[]) {
     // Catch the SIGINT signal (Ctrl + C) to close the server properly
     signal(SIGINT, close_server);
 
-    int port_num    = DEFAULT_PORT;
-    bool verbose    = false;
+    int port_num = DEFAULT_PORT;
+    bool verbose = false;
 
+    // Detect invalid command line arguments
     int input_state = handle_args(argc, argv, &port_num, &verbose);
     if (input_state == USAGE_ERR) {
         usage_msg(argv);
@@ -126,9 +132,11 @@ int main(int argc, char* argv[]) {
 
     struct sockaddr_in servaddr;
 
+    // Terminate if setting up server failed
     if (setup_server(&servaddr, port_num) != 0)
         return 1;
 
+    // Infinite loop to accept client connections
     while (true) {
         int client_fd = accept(server_fd, NULL, NULL);
         if (client_fd == -1) {
@@ -136,6 +144,7 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
+        // Create new thread to handle the client
         client_data_t* data = malloc(sizeof(client_data_t));
         data->client_fd     = client_fd;
         data->verbose       = verbose;

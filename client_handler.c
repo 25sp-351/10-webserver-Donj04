@@ -20,6 +20,7 @@ void* handle_client(void* input_ptr) {
     printf("Client connected, handling in thread %lu\n",
            (unsigned long)thread_id);
 
+    // Read requests endlessly until client disconnects
     while (true) {
         memset(buffer, 0, MSG_MAX_SIZE);
 
@@ -32,7 +33,7 @@ void* handle_client(void* input_ptr) {
             break;
         }
 
-        buffer[bytes_read] = '\0';
+        buffer[bytes_read] = '\0';  // Null-terminate buffer
 
         if (input->verbose) {
             printf("Thread %lu received:\n%s", (unsigned long)thread_id,
@@ -46,12 +47,15 @@ void* handle_client(void* input_ptr) {
         Request req;
         memset(&req, 0, sizeof(req));
 
+        // If parsing request failed, skip processing
         if (parse_request(input, &req, buffer) != 0)
             continue;
-        
+
+        // If processing gave a PATH_INVALID error, send a Bad Request response
         if (process_request(input, req) == PATH_INVALID)
             send_bad_req_response(input, req, NULL);
-        
+
+        // If client requested to close connection, stop loop
         if (!req.keep_alive)
             break;
     }

@@ -6,21 +6,19 @@
 #include <string.h>
 
 #include "client_handler.h"
-
-#define METHOD_SIZE 8
-#define PATH_SIZE 256
-#define VER_SIZE 16
-#define HEADER_MAX_SIZE 64
-#define CRLF "\r\n"
+#include "constants.h"
 
 typedef struct {
     char method[METHOD_SIZE];
-    char path[PATH_SIZE];
+    char path[FILE_PATH_SIZE];
     char version[VER_SIZE];
     bool keep_alive;
 } Request;
 
+// Parse the request's method, path, HTTP version, and connection status into a
+// Request struct, returning nonzero if a value was invalid.
+// The resulting struct is written into 'req'.
 int parse_request(const client_data_t* client_data, Request* req,
-                    const char* input_request);
+                  const char* input_request);
 
 #endif

@@ -6,8 +6,8 @@
 #include <unistd.h>
 
 #include "client_handler.h"
-#include "responder.h"
 #include "constants.h"
+#include "responder.h"
 
 // Print debug information about client request
 void req_print(const Request req) {
@@ -21,6 +21,9 @@ void req_print(const Request req) {
         (req.keep_alive) ? "keep-alive" : "close");
 }
 
+// Get the value of the "Connection" header in the request.
+// Returns false if the value is "close", true otherwise.
+// Invalid values are ignored and treated as the default. ("keep-alive")
 bool get_connection_header_val(const char* request) {
     const char* CONNCT_HEADER = "Connection: ";
     const size_t CONNCT_LEN   = 12;
@@ -47,23 +50,29 @@ bool get_connection_header_val(const char* request) {
 }
 
 int parse_request(const client_data_t* client_data, Request* req,
-                    const char* input_request) {
+                  const char* input_request) {
 
+    // If request could not be parsed
     if (sscanf(input_request, "%s %s %s", req->method, req->path,
                req->version) != 3)
         send_bad_req_response(client_data, *req, NULL);
 
+    // If HTTP version is unsupported or unknown
     else if (strncmp(req->version, VERSION, MSG_MAX_SIZE) != 0)
         send_bad_ver_response(client_data, *req, NULL);
 
+    // If method is not allowed or unknown
     else if (strncmp(req->method, GET_METHOD, MSG_MAX_SIZE) != 0)
         send_bad_method_response(client_data, *req, NULL);
 
+    // Parsing was successful
     else {
         req->keep_alive = get_connection_header_val(input_request);
-        req_print(*req);
+        if (client_data->verbose)
+            req_print(*req);
         return 0;
     }
-    req_print(*req);
+    if (client_data->verbose)
+        req_print(*req);
     return 1;
 }
