@@ -10,7 +10,9 @@
 #include "responder.h"
 
 #define CALC_DIR "/calc"
+#define CALC_LEN 5
 #define STATIC_DIR "/static"
+#define STATIC_LEN 7
 
 // Writes the binary data from the given file as a string into 'contents'
 int write_from_file(char* contents, size_t max_size, const char* file_path) {
@@ -147,17 +149,14 @@ int process_calc(const client_data_t* client_data, const Request req) {
 }
 
 int process_request(const client_data_t* client_data, const Request req) {
-    if (client_data->verbose)
-        printf("Processing /calc...\n");
-    if (process_calc(client_data, req) == 0)
-        return 0;
+    if (strncmp(req.path, CALC_DIR, CALC_LEN) == 0)
+        return process_calc(client_data, req);
+
+    else if (strncmp(req.path, STATIC_DIR, STATIC_LEN) == 0)
+        return process_static(client_data, req);
 
     if (client_data->verbose)
-        fprintf(stderr, "/calc failed. Processing /static...\n");
-    if (process_static(client_data, req) == 0)
-        return 0;
+        fprintf(stderr, "Invalid path: %s\n", req.path);
 
-    if (client_data->verbose)
-        fprintf(stderr, "/static failed\n");
     return PATH_INVALID;
 }
